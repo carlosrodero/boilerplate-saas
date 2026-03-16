@@ -1,24 +1,20 @@
 /**
- * Formatadores para exibição na UI — locale pt-BR.
- * Use apenas para apresentação; não para persistência ou cálculos.
+ * Formatação consistente para a UI (PAGES.md).
  */
 
-const ptBR = "pt-BR";
-
-export function formatDate(date: Date | string | number): string {
-  const d = typeof date === "object" && "getTime" in date ? date : new Date(date);
-  return new Intl.DateTimeFormat(ptBR, {
+export function formatDate(date: Date | string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(d);
+  }).format(new Date(date));
 }
 
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat(ptBR, {
+export function formatCurrency(cents: number): string {
+  return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(value);
+  }).format(cents / 100);
 }
 
 export const ROLE_LABELS: Record<string, string> = {
