@@ -1,2 +1,56 @@
 docs/
 AGENTS.md
+
+# nextjs
+.next/
+out/
+.env*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Dependency directories
+node_modules/
+.pnpm/
+.yarn/
+.cache/
+.npm/
+
+# Test coverage
+coverage/
+
+# Build output
+dist/
+build/
+turbo/
+*.tsbuildinfo
+
+# Misc
+*.local
+*.swp
+*.swo
+
+# Ignore vercel output
+.vercel/
+.vercel_build_output/
+
+# Ignore shadcn/ui generated files
+components.json
+
+# Ignore Prisma
+prisma/dev.db
+prisma/migrations/
+prisma/.env
