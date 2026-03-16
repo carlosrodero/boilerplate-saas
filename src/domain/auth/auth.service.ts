@@ -18,3 +18,15 @@ export async function requireAuth() {
   }
   return session;
 }
+
+/**
+ * Retorna os provedores OAuth conectados ao usuário (para exibir no perfil).
+ * Stub: em desenvolvimento retorna lista vazia ou mock.
+ */
+export async function getConnectedAccounts(_userId: string): Promise<string[]> {
+  // TODO: implementar com prisma.account.findMany({ where: { userId } }) e mapear provider
+  if (process.env.NODE_ENV === "development") {
+    return ["google"];
+  }
+  return [];
+}

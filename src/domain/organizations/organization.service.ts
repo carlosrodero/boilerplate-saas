@@ -86,3 +86,23 @@ export async function getUserOrganizations(
   }
   return [];
 }
+
+export type ProfileMembership = {
+  organization: Organization;
+  role: string;
+};
+
+/**
+ * Lista membrosias do usuário com organização e role (para página de perfil).
+ * Stub: em desenvolvimento retorna org demo com role OWNER.
+ */
+export async function getProfileMemberships(
+  _userId: string
+): Promise<ProfileMembership[]> {
+  // TODO: implementar com prisma.membership.findMany({ where: { userId }, include: { organization: true } })
+  if (process.env.NODE_ENV === "development") {
+    const orgs = await getUserOrganizations("demo-user-id");
+    return orgs.map((org) => ({ organization: org, role: "OWNER" }));
+  }
+  return [];
+}

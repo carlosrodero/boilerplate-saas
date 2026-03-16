@@ -4,7 +4,13 @@
  */
 
 export async function auth(): Promise<{
-  user: { id: string; name: string | null; email: string; image: string | null };
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    emailVerified?: boolean | null;
+  };
 } | null> {
   // TODO: implementar com getServerSession(authConfig) do next-auth
   if (process.env.NODE_ENV === "development") {
@@ -14,6 +20,7 @@ export async function auth(): Promise<{
         name: "Usuário Demo",
         email: "demo@example.com",
         image: null,
+        emailVerified: true,
       },
     };
   }
