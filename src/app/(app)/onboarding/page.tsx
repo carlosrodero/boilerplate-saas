@@ -1,20 +1,21 @@
 import { redirect } from "next/navigation";
-import { requireAuth, UnauthorizedError } from "@/domain/auth";
-import { getUserOrganizations } from "@/domain/organizations";
+import { requireAuth } from "@/domain/auth";
+import { prisma } from "@/lib/prisma";
 import { OnboardingForm } from "./onboarding-form";
 
 export default async function OnboardingPage() {
-  let session;
-  try {
-    session = await requireAuth();
-  } catch (e) {
-    if (e instanceof UnauthorizedError) redirect("/login");
-    throw e;
-  }
-  const organizations = await getUserOrganizations(session.user.id);
+  const session = await requireAuth();
 
-  if (organizations.length > 0) {
-    redirect(`/${organizations[0].slug}/dashboard`);
+  const membership = await prisma.membership.findFirst({
+    where: {
+      userId: session.user.id,
+      inviteStatus: "ACCEPTED",
+    },
+    include: { organization: true },
+  });
+
+  if (membership) {
+    redirect(`/${membership.organization.slug}/dashboard`);
   }
 
   return (

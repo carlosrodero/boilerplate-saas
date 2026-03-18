@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import type { Organization } from "./organization.types";
 
 /**
@@ -29,62 +30,55 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
 
 /**
  * Cria uma nova organização e associa o usuário como OWNER.
- * Stub: em desenvolvimento retorna org com os dados informados.
+ * Cria org + membership + subscription (stripeCustomerId placeholder até integrar Stripe).
  */
 export async function createOrganization(data: {
   name: string;
   slug: string;
   userId: string;
 }): Promise<Organization> {
-  // TODO: implementar com prisma.$transaction (org + membership + subscription)
-  if (process.env.NODE_ENV === "development") {
-    return {
-      id: `stub-${data.slug}-${Date.now()}`,
-      name: data.name,
-      slug: data.slug,
-      image: null,
-    };
-  }
-  throw new Error("createOrganization não implementado sem Prisma");
+  return prisma.$transaction(async (tx) => {
+    const org = await tx.organization.create({
+      data: { name: data.name, slug: data.slug },
+    });
+    await tx.membership.create({
+      data: {
+        userId: data.userId,
+        organizationId: org.id,
+        role: "OWNER",
+        inviteStatus: "ACCEPTED",
+      },
+    });
+    await tx.subscription.create({
+      data: {
+        organizationId: org.id,
+        stripeCustomerId: `cus_pending_${org.id}`,
+        status: "INACTIVE",
+      },
+    });
+    return { id: org.id, name: org.name, slug: org.slug, image: org.image };
+  });
 }
 
 /**
  * Busca organização pelo slug.
- * Stub: retorna null até Prisma estar configurado.
- * Em desenvolvimento com slug "demo", retorna org fake para testar o layout.
  */
 export async function getOrganizationBySlug(slug: string): Promise<Organization | null> {
-  // TODO: implementar com prisma.organization.findUnique({ where: { slug } })
-  if (process.env.NODE_ENV === "development" && slug === "demo") {
-    return {
-      id: "demo-org-id",
-      name: "Organização Demo",
-      slug: "demo",
-      image: null,
-    };
-  }
-  return null;
+  const org = await prisma.organization.findUnique({
+    where: { slug },
+  });
+  return org;
 }
 
 /**
- * Lista organizações do usuário.
- * Stub: em desenvolvimento com userId qualquer, retorna lista com org demo.
+ * Lista organizações do usuário (com membership aceita).
  */
-export async function getUserOrganizations(
-  _userId: string
-): Promise<Organization[]> {
-  // TODO: implementar com prisma
-  if (process.env.NODE_ENV === "development") {
-    return [
-      {
-        id: "demo-org-id",
-        name: "Organização Demo",
-        slug: "demo",
-        image: null,
-      },
-    ];
-  }
-  return [];
+export async function getUserOrganizations(userId: string): Promise<Organization[]> {
+  const memberships = await prisma.membership.findMany({
+    where: { userId, inviteStatus: "ACCEPTED" },
+    include: { organization: true },
+  });
+  return memberships.map((m) => m.organization);
 }
 
 export type ProfileMembership = {
@@ -94,15 +88,16 @@ export type ProfileMembership = {
 
 /**
  * Lista membrosias do usuário com organização e role (para página de perfil).
- * Stub: em desenvolvimento retorna org demo com role OWNER.
  */
 export async function getProfileMemberships(
-  _userId: string
+  userId: string
 ): Promise<ProfileMembership[]> {
-  // TODO: implementar com prisma.membership.findMany({ where: { userId }, include: { organization: true } })
-  if (process.env.NODE_ENV === "development") {
-    const orgs = await getUserOrganizations("demo-user-id");
-    return orgs.map((org) => ({ organization: org, role: "OWNER" }));
-  }
-  return [];
+  const memberships = await prisma.membership.findMany({
+    where: { userId, inviteStatus: "ACCEPTED" },
+    include: { organization: true },
+  });
+  return memberships.map((m) => ({
+    organization: m.organization,
+    role: m.role,
+  }));
 }

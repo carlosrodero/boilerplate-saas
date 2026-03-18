@@ -18,11 +18,7 @@ export type UpdateProfileResult =
 export async function updateUserProfileAction(
   formData: FormData
 ): Promise<UpdateProfileResult> {
-  try {
-    await requireAuth();
-  } catch {
-    return { success: false, error: "Não autenticado" };
-  }
+  await requireAuth();
 
   const parsed = UpdateProfileSchema.safeParse({
     name: formData.get("name"),

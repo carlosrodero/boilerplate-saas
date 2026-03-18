@@ -39,14 +39,14 @@ export default async function ProfilePage() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
               <UserAvatar
-                name={session.user.name}
-                image={session.user.image}
+                name={session.user.name ?? null}
+                image={session.user.image ?? null}
                 size="xl"
               />
               <div>
                 <p className="font-medium">{session.user.name ?? "—"}</p>
                 <p className="text-sm text-muted-foreground">
-                  {session.user.email}
+                  {session.user.email ?? ""}
                 </p>
               </div>
             </div>
@@ -58,7 +58,7 @@ export default async function ProfilePage() {
         <ProfileOrgsCard memberships={memberships} />
 
         <ProfileAccountCard
-          email={session.user.email}
+          email={session.user.email ?? ""}
           emailVerified={Boolean(emailVerified)}
           providers={accounts}
         />

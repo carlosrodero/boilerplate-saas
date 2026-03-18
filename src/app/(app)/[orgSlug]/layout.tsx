@@ -1,10 +1,8 @@
+import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/domain/auth";
-import {
-  getOrganizationBySlug,
-  getUserOrganizations,
-  requireRole,
-} from "@/domain/organizations";
+import { getUserOrganizations } from "@/domain/organizations";
+import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/shared/sidebar";
 
 interface OrgSlugLayoutProps {
@@ -17,22 +15,24 @@ export default async function OrgSlugLayout({
   params,
 }: OrgSlugLayoutProps) {
   const { orgSlug } = await params;
+  const session = await requireAuth();
 
-  let session;
-  try {
-    session = await requireAuth();
-  } catch {
-    redirect("/login");
-  }
-
-  const org = await getOrganizationBySlug(orgSlug);
+  const org = await prisma.organization.findUnique({
+    where: { slug: orgSlug },
+  });
   if (!org) {
-    redirect("/onboarding");
+    notFound();
   }
 
-  try {
-    await requireRole(session.user.id, org.id, "MEMBER");
-  } catch {
+  const membership = await prisma.membership.findUnique({
+    where: {
+      userId_organizationId: {
+        userId: session.user.id,
+        organizationId: org.id,
+      },
+    },
+  });
+  if (!membership) {
     redirect("/onboarding");
   }
 
@@ -45,9 +45,9 @@ export default async function OrgSlugLayout({
         currentOrg={org}
         organizations={organizations}
         user={{
-          name: session.user.name,
-          email: session.user.email,
-          image: session.user.image,
+          name: session.user.name ?? null,
+          email: session.user.email ?? "",
+          image: session.user.image ?? null,
         }}
       />
       <main className="flex-1 overflow-auto p-6">{children}</main>

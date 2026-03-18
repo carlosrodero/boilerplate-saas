@@ -1,0 +1,24 @@
+# PostgreSQL para desenvolvimento local.
+# Uso: docker compose up -d
+# DATABASE_URL="postgresql://saas:saas@localhost:5432/saas_boilerplate"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: boilerplate-saas-postgres
+    environment:
+      POSTGRES_USER: saas
+      POSTGRES_PASSWORD: saas
+      POSTGRES_DB: saas_boilerplate
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saas -d saas_boilerplate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

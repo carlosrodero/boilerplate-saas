@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { requireAuth } from "@/domain/auth";
 import { getUserOrganizations } from "@/domain/organizations";
 import { Sidebar } from "@/components/shared/sidebar";
@@ -8,18 +7,13 @@ export default async function ProfileLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let session;
-  try {
-    session = await requireAuth();
-  } catch {
-    redirect("/login");
-  }
+  const session = await requireAuth();
 
   const organizations = await getUserOrganizations(session.user.id);
   const user = {
-    name: session.user.name,
-    email: session.user.email,
-    image: session.user.image,
+    name: session.user.name ?? null,
+    email: session.user.email ?? "",
+    image: session.user.image ?? null,
   };
 
   if (organizations.length === 0) {
